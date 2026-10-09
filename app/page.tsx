@@ -1,77 +1,107 @@
-// import Image from "next/image";
 
-// export default function Home() {
-//   return (
-//     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-//       <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-//         <Image
-//           className="dark:invert h-5 w-[100px]"
-//           src="/next.svg"
-//           alt="Next.js logo"
-//           width={100}
-//           height={20}
-//           priority
-//         />
-//         <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-//           <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-//             To get started, edit the{" "}
-//             <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-//               page.tsx
-//             </code>{" "}
-//             file.
-//           </h1>
-//           <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-//             Looking for a starting point or more instructions? Head over to{" "}
-//             <a
-//               href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-//               className="font-medium text-zinc-950 dark:text-zinc-50"
-//             >
-//               Templates
-//             </a>{" "}
-//             or the{" "}
-//             <a
-//               href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-//               className="font-medium text-zinc-950 dark:text-zinc-50"
-//             >
-//               Learning
-//             </a>{" "}
-//             center.
-//           </p>
-//         </div>
-//         <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-//           <a
-//             className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-//             href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-//             target="_blank"
-//             rel="noopener noreferrer"
-//           >
-//             <Image
-//               className="dark:invert h-[14px] w-4"
-//               src="/vercel.svg"
-//               alt="Vercel logomark"
-//               width={16}
-//               height={14}
-//             />
-//             Deploy Now
-//           </a>
-//           <a
-//             className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-//             href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-//             target="_blank"
-//             rel="noopener noreferrer"
-//           >
-//             Documentation
-//           </a>
-//         </div>
-//       </main>
-//     </div>
-//   );
-// }
-export default function HomePage() {
+import Link from "next/link";
+import { Suspense } from "react";
+import { getFeaturedCommunities } from "@/lib/services/communityService";
+import { getLatestPosts } from "@/lib/services/postService";
+import CommunityCard from "@/components/CommunityCard";
+import PostCard from "@/components/PostCard";
+import HomeSidebar from "@/components/HomeSidebar";
+import TrendingTopics from "@/components/TrendingTopics";
+
+export const revalidate = 60;
+
+export default async function HomePage() {
+  const [communities, posts] = await Promise.all([
+    getFeaturedCommunities(),
+    getLatestPosts(),
+  ]);
+
   return (
-    <main>
-      <h1>DevCommunity</h1>
-      <p>Build. Learn. Share.</p>
-    </main>
+    <div className="px-4 py-8 sm:px-6">
+      <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1fr_300px]">
+        {/* Main column */}
+        <div className="min-w-0 space-y-10">
+          {/* Hero */}
+          <section className="rounded-2xl border border-[#232733] bg-[#12151C] p-8">
+            <p className="text-xs font-mono uppercase tracking-wide text-[#7C6FF5]">
+              Build · Share · Learn
+            </p>
+            <h1 className="mt-2 text-2xl font-semibold text-[#E6E8EB] sm:text-3xl">
+              Explore developer communities
+            </h1>
+            <p className="mt-2 max-w-lg text-sm text-[#8B92A3]">
+              Join communities, read insightful blogs, share your knowledge,
+              and grow with developers around the world.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Link
+                href="/communities"
+                className="rounded-lg bg-[#7C6FF5] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#6558E0]"
+              >
+                Browse Communities
+              </Link>
+              <Link
+                href="/blogs"
+                className="rounded-lg border border-[#232733] px-4 py-2 text-sm font-medium text-[#E6E8EB] transition-colors hover:border-[#333844]"
+              >
+                Create a Post
+              </Link>
+            </div>
+          </section>
+
+          {/* Featured communities */}
+          <section>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-sm font-medium text-[#E6E8EB]">
+                Featured Communities
+              </h2>
+              <Link href="/communities" className="text-xs text-[#7C6FF5] hover:underline">
+                View all →
+              </Link>
+            </div>
+
+            {communities.length === 0 ? (
+              <p className="text-sm text-[#8B92A3]">No communities yet.</p>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {communities.map((c: any) => (
+                  <CommunityCard key={c._id} community={c} />
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Latest blogs */}
+          <section>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-sm font-medium text-[#E6E8EB]">Latest Blogs</h2>
+              <Link href="/blogs" className="text-xs text-[#7C6FF5] hover:underline">
+                View all →
+              </Link>
+            </div>
+
+            {posts.length === 0 ? (
+              <p className="text-sm text-[#8B92A3]">No posts yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {posts.map((post: any) => (
+                  <PostCard key={post._id} post={post} />
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+
+        {/* Right sidebar */}
+        <aside className="space-y-4 lg:sticky lg:top-20 lg:h-fit">
+          <Suspense fallback={<div className="h-40 rounded-xl bg-[#12151C]" />}>
+            <HomeSidebar />
+          </Suspense>
+          <Suspense fallback={<div className="h-40 rounded-xl bg-[#12151C]" />}>
+            <TrendingTopics />
+          </Suspense>
+        </aside>
+      </div>
+    </div>
   );
 }
